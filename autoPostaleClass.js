@@ -25,8 +25,7 @@ class AutoPostale {
     let result = await getData();
 
     let _data = await result.json();
-
-    debugger
+    
     if (_data.validity === "KO") {
       result = await getData();
       _data = await result.json();
