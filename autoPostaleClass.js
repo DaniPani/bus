@@ -1,19 +1,9 @@
 window.source = "";
+window.url = new URL("http://autopostale.teqmonitoring.com/RTPI-AT/rtpi");
 
-class AutoPostale {
-    constructor() {
-        this.url = new URL("http://autopostale.teqmonitoring.com/RTPI-AT/rtpi");
-    }
-
-    async listOfBusStops() {
-        let result = await this.customFetch("GETTARGETS", {});
-        window.source = result.source;
-
-        return result.data.map(i => new BusStop(i));
-    }
-
+class Util {
     async customFetch(type, data) {
-        const getData = async () =>
+        let getData = async _ =>
             (await fetch(this.buildUrl(type, data), {
                 method: "GET"
             })).json();
@@ -24,6 +14,9 @@ class AutoPostale {
             result = await getData();
             if (result.validity === "KO") {
                 result = await getData();
+                if (result.validity === "KO") {
+                    result = await getData();
+                }
             }
         }
         return result;
@@ -39,14 +32,27 @@ class AutoPostale {
     }
 
     buildUrl(type, data) {
-        this.url.search = new URLSearchParams({
+        window.url.search = new URLSearchParams({
             data: JSON.stringify(this.queryParams(type, data))
         });
-        return this.url;
+        return window.url;
     }
 }
 
-class BusStop extends AutoPostale {
+class AutoPostale extends Util {
+    constructor() {
+        super();
+    }
+
+    async listOfBusStops() {
+        let result = await this.customFetch("GETTARGETS", {});
+        window.source = result.source;
+
+        return result.data.map(i => new BusStop(i));
+    }
+}
+
+class BusStop extends Util {
     constructor({
         Name,
         Label,
@@ -66,7 +72,7 @@ class BusStop extends AutoPostale {
     }
 }
 
-class BusArriving extends AutoPostale {
+class BusArriving extends Util {
     constructor({
         Target,
         Route,
